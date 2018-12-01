@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Georgian Optical Character Recognition</title>
+      <meta name="description" content="">
+      <meta name="viewport" content="width=device-width">
+  <!--<link rel="stylesheet" href="aaaa_files/prism.css">
+      <link rel="stylesheet" href="aaaa_files/website.css"> -->
+      <link rel="stylesheet" href="aaaa_files/drawingboard.css">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <link rel="stylesheet" media="screen and (max-device-width: 800px)" href="stylem.css" />
+      <link rel="stylesheet" media="screen and (min-device-width: 801px)" href="style.css" />
+
+   </head>
+   <body>
+<table>
+	<tr id = "logo" >
+      <img id = "logo1"style="position:relative;" src="logo.png" alt="Smiley face" height="150" align="right">
+	</tr>
+</table>
+      <noscript>JavaScript is required :(</noscript>
+      <div id="container">
+      <div data-example="5">
+      <script>
+	var answ;
+	function sleep(seconds) 
+	{
+		var e = new Date().getTime() + (seconds * 1000);
+		while (new Date().getTime() <= e) {}
+	}
+
+	function myFunction() {
+		$('#data').remove();	
+		// Code to be executed
+		var img = defaultBoard.getImg();
+
+		//we keep drawingboard content only if it's not the 'blank canvas'
+		var imgInput = (defaultBoard.blankCanvas == img) ? '' : img;
+
+		//put the drawingboard content in the form field to send it to the server
+		//$(this).find('input[name=image]').val(imgInput);
+		document.getElementById("imageInput").value = imgInput;
+		$.ajax({
+			url:'create-drawing.php',
+			type:'post',
+			data:$('#myform').serialize(),
+			async: false,
+			success:function(data){
+				$('#result').html(data);	
+				//console.log(data[0] == 'T');
+				//console.log(data[0]);
+				//if(data[0] != "T"){
+					butt();
+				//}
+			},
+			error:function(){
+				$('#result').html("The server is temporarily down, please try again later");
+			},
+			timeout: 3000
+			
+		 });
+	}
+	function butt(){
+		$('#buttons').append('<div id="data">\
+				      	<input class="b1 data" type="submit" value="სწორია" onclick="saveChars()"/>\
+			      	      	<input class="b1 data" type="submit" value="არასწორია" onclick="saveImg()"/>\
+				      </div>');
+	}
+	function saveChars(){
+		//send to segmenter image + correct answer
+		//name chars date - char. png
+		var orig = document.getElementById("orig"); // use correct instead of orig in case of using corrected.
+		var text = orig.innerHTML;
+
+		$('#myform').append('<input id="hidInp" type="hidden" name="chars" value="' + text + '" />');
+		var img = defaultBoard.getImg();
+		//we keep drawingboard content only if it's not the 'blank canvas'
+		var imgInput = (defaultBoard.blankCanvas == img) ? '' : img;
+		document.getElementById("imageInput").value = imgInput;
+		$.ajax({
+			url:'segment.php',
+			type:'post',
+			data:$('#myform').serialize(),			
+			success:function(data){
+				//$('#result').html(data);
+		 	}
+		});
+
+		/*
+		var ori = document.getElementById("hidInp"); // use correct instead of orig in case of using corrected.
+		var tex = hidInp.value;
+		console.log(tex)
+		*/
+		$('#data').remove();
+		$('#hidInp').remove();
+
+	}
+	function saveImg(){
+		//send just image and save with date or whatever is easy with php
+		$('#data').remove();
+		// Code to be executed
+		var img = defaultBoard.getImg();
+		//we keep drawingboard content only if it's not the 'blank canvas'
+		var imgInput = (defaultBoard.blankCanvas == img) ? '' : img;
+
+		document.getElementById("imageInput").value = imgInput;
+		$.ajax({
+			url:'save.php',
+			type:'post',
+			data:$('#myform').serialize(),
+			success:function(){
+		 	}
+		});
+	}
+	function reset()
+	{
+		canvas = document.getElementById("canvasiko");
+		context = canvas.getContext("2d");
+		//context.setTransform(1, 0, 0, 1, 0, 0);
+		//context.clearRect(0,0, canvas.width, canvas.height);
+		context.fillStyle = "white";
+		context.fillRect(0, 0, canvas.width, canvas.height);
+	}
+	function isOneChecked() {
+		// All <input> tags...
+		var chx = document.getElementsByTagName('input');
+		for (var i=0; i<chx.length; i++) {
+			if (chx[i].type == 'radio' && chx[i].checked) {
+				return true;
+			}
+		}
+		return false;
+	}
+	function myFun1(){
+		
+	}
+      </script>
+	<form class="drawing-form" id="myform" action="" method="post">
+
+  		<!-- this will be the drawingboard container -->
+ 		 <div id="board">
+
+		  </div>
+
+ 		 <!-- this will be the input used to pass the drawingboard content to the server -->
+ 		 <input type="hidden" name="image" id="imageInput" value="1">
+      <div class="example" data-example="1">
+         <div class="board drawing-board" id="default-board"></div>
+      </div>
+   
+	</form>	
+      <!-- jquery is required - zepto might do the trick too -->
+      <script async="" src="aaaa_files/analytics.js"></script><script src="aaaa_files/ga.js"></script><script src="aaaa_files/jquery-1.js"></script>
+      <script src="aaaa_files/drawingboard.js"></script>
+      <script data-example="1">
+         //create the drawingboard by passing it the #id of the wanted container
+         var defaultBoard = new DrawingBoard.Board('default-board', {controls:[]});
+      </script>
+<input class="b1" type="submit" value="Submit" onclick="myFunction()"/>
+<input class="b1" type="submit" value ="Clear" onclick="reset()"/>
+
+ 
+   <p>Result: <span id="result"></span></p>
+   <div id ='buttons'></div>
+   </body>
+</html>
